@@ -7,6 +7,8 @@
 #include "include/font.h"
 #include "define.h"
 #include "inicia.h"
+#include "hardware/pwm.h"
+#include "ledjoy.h"
 
 
 
@@ -16,8 +18,11 @@ int main()
     stdio_init_all();
     inicia();
 
+    inipwm();
+
     while (true) {
-        printf("Hello, world!\n");
+      
+        ledjoy();
         sleep_ms(1000);
     }
 }
