@@ -35,13 +35,23 @@ void ledjoy(){
     uint16_t vry_value = adc_read(); // Lê o eixo Y (0 a 4095)
 
     // Ajusta o duty cycle do LED Azul (Eixo Y)
-    uint16_t pwm_level_azul = abs(vry_value - 2048) * 2; // Quanto mais longe do centro, mais brilho
-    pwm_set_gpio_level(pinB, pwm_level_azul);
+    uint16_t pwm_level_azul = abs(vry_value - 1892) * 2; // Quanto mais longe do centro, mais brilho
+    if(pwm_level_azul>=0 && pwm_level_azul<=500){
+        pwm_set_gpio_level(pinB, 0);
+    }else{
+        pwm_set_gpio_level(pinB, pwm_level_azul);
+    }
 
     // Ajusta o duty cycle do LED Vermelho (Eixo X)
-    uint16_t pwm_level_vermelho = abs(vrx_value - 2048) * 2;
-    pwm_set_gpio_level(pinR, pwm_level_vermelho);
+   
+    uint16_t pwm_level_vermelho = abs(vrx_value - 1876) * 2; // Quanto mais longe do centro, mais brilho
+    if(pwm_level_vermelho>=0 && pwm_level_vermelho<=500){
+        pwm_set_gpio_level(pinR, 0);
+    }else{
+        pwm_set_gpio_level(pinR, pwm_level_vermelho);
+    }
 
+    
     // Calcula o duty cycle em porcentagem para depuração
     float duty_cycle_azul = (pwm_level_azul / 4095.0) * 100;
     float duty_cycle_vermelho = (pwm_level_vermelho / 4095.0) * 100;
@@ -49,7 +59,7 @@ void ledjoy(){
     // Exibir valores no terminal a cada 1 segundo
     uint32_t current_time = to_ms_since_boot(get_absolute_time());
     if (current_time - last_print_time >= 1000) {
-        printf("VRX: %u | VRY: %u\n", vrx_value, vry_value);
+        printf("VRX: %u | VRY: %u\n", pwm_level_azul, pwm_level_vermelho);
         printf("Duty Cycle LED Azul: %.2f%% | Duty Cycle LED Vermelho: %.2f%%\n", duty_cycle_azul, duty_cycle_vermelho);
         last_print_time = current_time;
     }

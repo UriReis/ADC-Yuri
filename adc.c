@@ -9,6 +9,7 @@
 #include "inicia.h"
 #include "hardware/pwm.h"
 #include "ledjoy.h"
+#include "display.h"
 
 
 
@@ -20,9 +21,15 @@ int main()
 
     inipwm();
 
+    inii2();
+
+    
+
     while (true) {
       
         ledjoy();
-        sleep_ms(1000);
+        quadradodisplay();
+        
+        sleep_ms(50);
     }
 }
