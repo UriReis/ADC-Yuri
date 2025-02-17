@@ -5,7 +5,7 @@
 #include "define.h"
 #include "inicia.h"
 #include "hardware/pwm.h"
-uint32_t last_print_time = 0;
+
 
 uint pwm_init_gpio(uint gpio, uint wrap) {
     gpio_set_function(gpio, GPIO_FUNC_PWM); // Configura o pino como PWM
@@ -25,43 +25,73 @@ void inipwm(){
     
 }
 
-void ledjoy(){
 
+
+bool estadoLeds = true; // Estado inicial: LEDs ligados
+
+void gpio_irq_handler(uint gpio, uint32_t events)
+{
+    // Obtém o tempo atual em microssegundos
+    uint32_t current_time = to_us_since_boot(get_absolute_time());
+    static volatile uint32_t last_timeA = 0; // Armazena o tempo do último evento (em microssegundos)
+
+    // Verifica se foi o botão A que foi pressionado
+    if (gpio == Botao_A)
+    {
+        if (current_time - last_timeA > 200000) // Debouncing de 200ms
+        {
+            last_timeA = current_time;
+
+            // Alterna o estado dos LEDs (toggle)
+            estadoLeds = !estadoLeds;
+
+            if (estadoLeds)
+            {
+                printf("Leds on\n");
+            }
+            else
+            {
+                printf("LEDs off\n");
+                pwm_set_gpio_level(pinB, 0); // Desliga LED Azul
+                pwm_set_gpio_level(pinR, 0); // Desliga LED Vermelho
+            }
+        }
+    }
+}
+
+void ledjoy()
+{
     // Lê os valores do joystick
-    adc_select_input(0);  
+    adc_select_input(0);
     uint16_t vrx_value = adc_read(); // Lê o eixo X (0 a 4095)
-    
+
     adc_select_input(1);
     uint16_t vry_value = adc_read(); // Lê o eixo Y (0 a 4095)
 
-    // Ajusta o duty cycle do LED Azul (Eixo Y)
-    uint16_t pwm_level_azul = abs(vry_value - 1892) * 2; // Quanto mais longe do centro, mais brilho
-    if(pwm_level_azul>=0 && pwm_level_azul<=500){
-        pwm_set_gpio_level(pinB, 0);
-    }else{
-        pwm_set_gpio_level(pinB, pwm_level_azul);
+    if (estadoLeds) // Somente atualiza os LEDs se estiverem ativados pelo botão A
+    {
+        uint16_t pwm_level_azul = abs(vry_value - 1892) * 2;
+        if (pwm_level_azul >= 0 && pwm_level_azul <= 500)
+        {
+            pwm_set_gpio_level(pinB, 0);
+        }
+        else
+        {
+            pwm_set_gpio_level(pinB, pwm_level_azul);
+        }
+
+        uint16_t pwm_level_vermelho = abs(vrx_value - 1876) * 2;
+        if (pwm_level_vermelho >= 0 && pwm_level_vermelho <= 500)
+        {
+            pwm_set_gpio_level(pinR, 0);
+        }
+        else
+        {
+            pwm_set_gpio_level(pinR, pwm_level_vermelho);
+        }
     }
-
-    // Ajusta o duty cycle do LED Vermelho (Eixo X)
-   
-    uint16_t pwm_level_vermelho = abs(vrx_value - 1876) * 2; // Quanto mais longe do centro, mais brilho
-    if(pwm_level_vermelho>=0 && pwm_level_vermelho<=500){
-        pwm_set_gpio_level(pinR, 0);
-    }else{
-        pwm_set_gpio_level(pinR, pwm_level_vermelho);
-    }
-
-    
-    // Calcula o duty cycle em porcentagem para depuração
-    float duty_cycle_azul = (pwm_level_azul / 4095.0) * 100;
-    float duty_cycle_vermelho = (pwm_level_vermelho / 4095.0) * 100;
-
-    // Exibir valores no terminal a cada 1 segundo
-    uint32_t current_time = to_ms_since_boot(get_absolute_time());
-    if (current_time - last_print_time >= 1000) {
-        printf("VRX: %u | VRY: %u\n", pwm_level_azul, pwm_level_vermelho);
-        printf("Duty Cycle LED Azul: %.2f%% | Duty Cycle LED Vermelho: %.2f%%\n", duty_cycle_azul, duty_cycle_vermelho);
-        last_print_time = current_time;
-    }
-
 }
+
+
+
+
