@@ -68,21 +68,21 @@ void ledjoy()
         uint16_t pwm_level_azul = abs(vry_value - 1892) * 2;
         if (pwm_level_azul <= 500)
         {
-            pwm_set_gpio_level(pinB, 0); // Evita brilho fraco e mantém apagado
+            pwm_set_gpio_level(pinR, 0); // Evita brilho fraco e mantém apagado
         }
         else
         {
-            pwm_set_gpio_level(pinB, pwm_level_azul);
+            pwm_set_gpio_level(pinR, pwm_level_azul);
         }
 
         uint16_t pwm_level_vermelho = abs(vrx_value - 1876) * 2;
         if (pwm_level_vermelho <= 500)
         {
-            pwm_set_gpio_level(pinR, 0);
+            pwm_set_gpio_level(pinB, 0);
         }
         else
         {
-            pwm_set_gpio_level(pinR, pwm_level_vermelho);
+            pwm_set_gpio_level(pinB, pwm_level_vermelho);
         }
     }
 }
